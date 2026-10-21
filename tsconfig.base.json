@@ -6,6 +6,9 @@
 		// necesitan build previo. Lo publicado usa `dist`.
 		"customConditions": ["henko-source"],
 		"lib": ["ES2023"],
-		"types": ["node"]
+		"types": ["node"],
+		// Nest usa decoradores con metadata de tipos.
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
 	}
 }

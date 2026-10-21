@@ -1,6 +1,6 @@
 {
 	"name": "@henko-software/pg",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Transacciones de Postgres que viajan con el contexto, para que auditoría y outbox usen la misma.",
 	"license": "UNLICENSED",
 	"type": "module",

@@ -90,8 +90,9 @@ relay.start()
 ```
 
 El BFF o el consumidor de eventos envuelve cada request con
-`runWithContext({ actor, localId, correlationId }, …)`. Los adaptadores de
-Nest (interceptor, filtro de errores, guard) llegan con el BFF.
+`runWithContext({ actor, localId, correlationId }, …)`. En un servicio Nest,
+`createContextMiddleware` con `internalTokenResolver` lo hace solo, y
+`HenkoErrorFilter` da a todos los errores la misma forma.
 
 ## Desarrollo
 

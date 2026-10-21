@@ -1,0 +1,46 @@
+{
+	"name": "@henko-software/nest",
+	"version": "0.1.0",
+	"description": "Adaptadores de NestJS: contexto por request, filtro de errores con código y validación con zod.",
+	"license": "UNLICENSED",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Henko-Software/henko-libs.git",
+		"directory": "packages/nest"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"henko-source": "./src/index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"typecheck": "tsc -p tsconfig.json"
+	},
+	"dependencies": {
+		"@henko-software/core": "workspace:^",
+		"@henko-software/errors": "workspace:^",
+		"@henko-software/logger": "workspace:^",
+		"@henko-software/tracing": "workspace:^",
+		"zod": "^4.1.0"
+	},
+	"peerDependencies": {
+		"@nestjs/common": "^12.0.0"
+	},
+	"devDependencies": {
+		"@nestjs/common": "^12.2.0",
+		"@nestjs/core": "^12.2.0",
+		"reflect-metadata": "^0.2.2",
+		"rxjs": "^7.8.2"
+	}
+}
