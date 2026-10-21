@@ -5,18 +5,20 @@ servicio necesita y nadie tiene que volver a escribir: contexto del request,
 errores con código para el usuario, logs, trazas, casos de uso hexagonales,
 auditoría y outbox. Se publica como paquetes `@henko-software/*`.
 
-| Paquete        | Qué trae                                                                                                                                                         |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `core`         | contexto del request (actor con rol congelado, local, correlación) que viaja solo por los `await`; `uuidv7`; plata en centavos                                   |
-| `errors`       | `defineErrors` (catálogo con mensaje obligatorio), `toErrorResponse` (nunca muestra el error interno) y el código corto `H-4BF92F` que sale de la traza          |
-| `tracing`      | `withSpan`, `currentTraceId`, y la traza que viaja en las cabeceras de un mensaje                                                                                |
-| `tracing-node` | `initTracing`: OpenTelemetry con autoinstrumentación (HTTP, Postgres…) y envío OTLP                                                                              |
-| `logger`       | pino en JSON con traza, actor, local y correlación en cada línea; CUIT, mails, tokens enmascarados                                                               |
-| `hexagonal`    | `UseCase` (transacción + span con nombre), puertos `AuditTrail`, `EventPublisher`, `TransactionRunner`, `Clock`; `defineAuditActions`, `diffFields`              |
-| `pg`           | `PgTransactions`: la transacción viaja con el contexto, así datos, auditoría y outbox se confirman juntos                                                        |
-| `audit`        | `PgAuditTrail` + migración: append-only de verdad (sin UPDATE/DELETE para el rol del servicio)                                                                   |
-| `outbox`       | `PgOutboxPublisher` (el evento se guarda en la transacción), `OutboxRelay` (lo manda al bus, reintenta, en orden) y `NatsMessageBus` (JetStream, sin duplicados) |
-| `testing`      | auditoría, eventos, bus, reloj y transacciones en memoria; `withTestContext`                                                                                     |
+| Paquete        | Qué trae                                                                                                                                                                                               |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `core`         | contexto del request (actor con rol congelado, local, correlación) que viaja solo por los `await`; `uuidv7`; plata en centavos                                                                         |
+| `errors`       | `defineErrors` (catálogo con mensaje obligatorio), `toErrorResponse` (nunca muestra el error interno) y el código corto `H-4BF92F` que sale de la traza                                                |
+| `tracing`      | `withSpan`, `currentTraceId`, y la traza que viaja en las cabeceras de un mensaje                                                                                                                      |
+| `tracing-node` | `initTracing`: OpenTelemetry con autoinstrumentación (HTTP, Postgres…) y envío OTLP                                                                                                                    |
+| `logger`       | pino en JSON con traza, actor, local y correlación en cada línea; CUIT, mails, tokens enmascarados                                                                                                     |
+| `hexagonal`    | `UseCase` (transacción + span con nombre), puertos `AuditTrail`, `EventPublisher`, `TransactionRunner`, `Clock`; `defineAuditActions`, `diffFields`                                                    |
+| `pg`           | `PgTransactions`: la transacción viaja con el contexto, así datos, auditoría y outbox se confirman juntos; `runMigrations`: migraciones `.sql` en orden, con checksum (frena si se edita una aplicada) |
+| `audit`        | `PgAuditTrail` + migración: append-only de verdad (sin UPDATE/DELETE para el rol del servicio)                                                                                                         |
+| `outbox`       | `PgOutboxPublisher` (el evento se guarda en la transacción), `OutboxRelay` (lo manda al bus, reintenta, en orden) y `NatsMessageBus` (JetStream, sin duplicados)                                       |
+| `service-auth` | tokens internos entre servicios (Ed25519, 60 s, con audiencia): quién llama y en nombre de quién, en vez de cabeceras sueltas tipo `x-user-id`                                                         |
+| `nest`         | adaptadores de NestJS: middleware de contexto (default-deny, rutas públicas explícitas), filtro de errores con código y `parseInput` (zod, error por campo)                                            |
+| `testing`      | auditoría, eventos, bus, reloj y transacciones en memoria; `withTestContext`                                                                                                                           |
 
 ## Cómo se usa en un servicio
 
