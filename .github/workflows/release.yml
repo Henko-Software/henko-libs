@@ -1,0 +1,36 @@
+# Publica en GitHub Packages cada paquete cuya versión todavía no está
+# publicada. Para sacar una versión: subir el "version" del package.json;
+# al llegar a main, sale sola.
+name: Publicar paquetes
+
+on:
+  push:
+    branches: [main]
+    paths: ['packages/**']
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm typecheck
+      - run: pnpm build
+      - name: Publicar lo nuevo
+        run: pnpm -r publish --no-git-checks --access public

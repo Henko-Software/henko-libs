@@ -1,0 +1,35 @@
+{
+	"name": "henko-libs",
+	"private": true,
+	"type": "module",
+	"description": "El chasis de los servicios de Henko: contexto, errores, logs, trazas, hexagonal, auditoría y outbox, publicados como @henko-software/*.",
+	"packageManager": "pnpm@9.15.9",
+	"engines": {
+		"node": ">=22"
+	},
+	"scripts": {
+		"build": "pnpm -r build",
+		"test": "vitest run",
+		"lint": "eslint . --max-warnings=0",
+		"check": "prettier --check . && pnpm lint",
+		"format": "prettier --write .",
+		"typecheck": "pnpm -r typecheck",
+		"prepare": "lefthook install"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^19.8.1",
+		"@henko-software/agent-rules": "^0.1.0",
+		"@henko-software/commitlint-config": "^0.1.0",
+		"@henko-software/eslint-config": "^0.1.1",
+		"@henko-software/git-hooks": "^0.1.0",
+		"@henko-software/prettier-config": "^0.1.0",
+		"@henko-software/tsconfig": "^0.1.0",
+		"@types/node": "^22.18.0",
+		"eslint": "^9.39.0",
+		"lefthook": "^1.13.0",
+		"prettier": "^3.6.2",
+		"typescript": "^5.9.3",
+		"vitest": "^3.2.4"
+	},
+	"prettier": "@henko-software/prettier-config"
+}

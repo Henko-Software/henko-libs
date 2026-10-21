@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  ci:
+    uses: Henko-Software/henko-standards/.github/workflows/ci-lib.yml@v0
+    with:
+      postgres: true

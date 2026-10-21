@@ -1,0 +1,38 @@
+{
+	"name": "@henko-software/tracing-node",
+	"version": "0.1.0",
+	"description": "Arranque de OpenTelemetry en un servicio Node: autoinstrumentación y envío OTLP.",
+	"license": "UNLICENSED",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Henko-Software/henko-libs.git",
+		"directory": "packages/tracing-node"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"henko-source": "./src/index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"typecheck": "tsc -p tsconfig.json"
+	},
+	"dependencies": {
+		"@opentelemetry/api": "^1.10.0",
+		"@opentelemetry/auto-instrumentations-node": "^0.82.0",
+		"@opentelemetry/exporter-trace-otlp-http": "^0.300.0",
+		"@opentelemetry/resources": "^3.0.0",
+		"@opentelemetry/sdk-node": "^0.300.0",
+		"@opentelemetry/semantic-conventions": "^1.43.0"
+	}
+}

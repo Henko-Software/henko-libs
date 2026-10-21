@@ -1,0 +1,2 @@
+extends:
+  - node_modules/@henko-software/git-hooks/lefthook.yml
