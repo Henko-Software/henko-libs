@@ -1,6 +1,6 @@
 {
 	"name": "@henko-software/tracing",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Ayudas de trazas sobre OpenTelemetry: spans, trace id y propagación por mensajes.",
 	"license": "UNLICENSED",
 	"type": "module",

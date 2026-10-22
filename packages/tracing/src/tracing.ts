@@ -64,10 +64,33 @@ const withRemoteContext = <T>(
 	work: () => T
 ): T => context.with(propagation.extract(context.active(), headers), work)
 
+/**
+ * Marca el span activo con el error que vio la persona, así la Console lo
+ * encuentra por su código (`{ span.henko.error.ref = "H-4BF92F" }` en
+ * Tempo). Los 5xx además quedan como span con error.
+ */
+const recordErrorOnSpan = (error: {
+	ref: string
+	code: string
+	status: number
+}): void => {
+	const span = trace.getActiveSpan()
+	if (!span) return
+	span.setAttributes({
+		'henko.error.ref': error.ref,
+		'henko.error.code': error.code,
+		'http.response.status_code': error.status
+	})
+	if (error.status >= 500) {
+		span.setStatus({ code: SpanStatusCode.ERROR, message: error.code })
+	}
+}
+
 export {
 	currentSpanId,
 	currentTraceId,
 	injectTraceHeaders,
+	recordErrorOnSpan,
 	withRemoteContext,
 	withSpan
 }

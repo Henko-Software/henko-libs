@@ -1,6 +1,6 @@
 import { type RequestContext, runWithContext } from '@henko-software/core'
 import { AppError, commonErrors, toErrorResponse } from '@henko-software/errors'
-import { currentTraceId } from '@henko-software/tracing'
+import { currentTraceId, recordErrorOnSpan } from '@henko-software/tracing'
 
 /** Lo mínimo de un request y una respuesta de Express que usa el middleware. */
 export type HttpRequest = {
@@ -58,6 +58,11 @@ const createContextMiddleware = ({
 						commonErrors.create('common.unauthenticated'),
 						currentTraceId()
 					)
+					recordErrorOnSpan({
+						ref: body.error.ref,
+						code: body.error.code,
+						status
+					})
 					response.status(status).json(body)
 					return
 				}
@@ -70,6 +75,11 @@ const createContextMiddleware = ({
 						: commonErrors.create('common.unauthenticated'),
 					currentTraceId()
 				)
+				recordErrorOnSpan({
+					ref: body.error.ref,
+					code: body.error.code,
+					status
+				})
 				response.status(status).json(body)
 			})
 	}

@@ -1,6 +1,6 @@
 {
 	"name": "@henko-software/hexagonal",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Base de casos de uso y puertos comunes (auditoría, eventos, transacciones, reloj).",
 	"license": "UNLICENSED",
 	"type": "module",

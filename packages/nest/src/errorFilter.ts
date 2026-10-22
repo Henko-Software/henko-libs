@@ -7,7 +7,7 @@ import {
 
 import { AppError, commonErrors, toErrorResponse } from '@henko-software/errors'
 import type { Logger } from '@henko-software/logger'
-import { currentTraceId } from '@henko-software/tracing'
+import { currentTraceId, recordErrorOnSpan } from '@henko-software/tracing'
 
 import type { HttpResponse } from './contextMiddleware.js'
 
@@ -39,6 +39,11 @@ class HenkoErrorFilter implements ExceptionFilter {
 					? fromHttpStatus(exception.getStatus())
 					: exception
 		const { status, body } = toErrorResponse(known, currentTraceId())
+		recordErrorOnSpan({
+			ref: body.error.ref,
+			code: body.error.code,
+			status
+		})
 		const log = {
 			error_code: body.error.ref,
 			error_key: body.error.code,

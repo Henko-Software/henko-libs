@@ -150,4 +150,21 @@ describe('parseInput', () => {
 			})
 		}
 	})
+
+	it('los mensajes salen en español y el mensaje propio del schema gana', () => {
+		const own = z.object({
+			email: z.email(),
+			password: z.string().min(10, 'Mínimo 10 caracteres.')
+		})
+		try {
+			parseInput(own, { email: 'no', password: 'corta' })
+			expect.unreachable()
+		} catch (error) {
+			const fields = (error as { details: { fields: Record<string, string> } })
+				.details.fields
+			expect(fields.email).not.toMatch(/invalid/i)
+			expect(fields.email?.toLowerCase()).toContain('inválid')
+			expect(fields.password).toBe('Mínimo 10 caracteres.')
+		}
+	})
 })
