@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
 import { getContext } from '@henko-software/core'
-import { defineErrors } from '@henko-software/errors'
+import { commonErrors, defineErrors } from '@henko-software/errors'
 import { createLogger } from '@henko-software/logger'
 
 import {
@@ -84,6 +84,22 @@ describe('middleware de contexto', () => {
 			}
 		)
 		expect(passed).toBe(true)
+	})
+
+	it('si el resolver falla con un AppError sale ese error, no 401', async () => {
+		const failing = createContextMiddleware({
+			resolve: () =>
+				Promise.reject(commonErrors.create('common.upstream_timeout'))
+		})
+		const { response, sent } = fakeResponse()
+		failing({ headers: {}, path: '/me' }, response, () => {
+			throw new Error('no debería pasar')
+		})
+		await new Promise(resolve => setTimeout(resolve, 0))
+		expect(sent.body).toMatchObject({
+			error: { code: 'common.upstream_timeout' }
+		})
+		expect(sent.status).not.toBe(401)
 	})
 })
 

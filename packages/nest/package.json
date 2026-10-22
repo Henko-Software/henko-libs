@@ -1,6 +1,6 @@
 {
 	"name": "@henko-software/nest",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Adaptadores de NestJS: contexto por request, filtro de errores con código y validación con zod.",
 	"license": "UNLICENSED",
 	"type": "module",

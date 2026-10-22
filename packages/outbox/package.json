@@ -1,6 +1,6 @@
 {
 	"name": "@henko-software/outbox",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Outbox en Postgres: eventos guardados en la misma transacción que el cambio y relay al bus (NATS).",
 	"license": "UNLICENSED",
 	"type": "module",

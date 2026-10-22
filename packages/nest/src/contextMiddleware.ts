@@ -1,5 +1,5 @@
 import { type RequestContext, runWithContext } from '@henko-software/core'
-import { commonErrors, toErrorResponse } from '@henko-software/errors'
+import { AppError, commonErrors, toErrorResponse } from '@henko-software/errors'
 import { currentTraceId } from '@henko-software/tracing'
 
 /** Lo mínimo de un request y una respuesta de Express que usa el middleware. */
@@ -32,6 +32,11 @@ export type ContextMiddlewareOptions = {
  * Middleware de Express (Nest lo usa con `app.use`). Cada request corre
  * adentro de su contexto, así el actor y el local llegan solos a casos de
  * uso, auditoría, eventos y logs. Sin contexto válido: 401. Default-deny.
+ *
+ * Si el resolver devuelve `null` o falla con un error cualquiera (token mal
+ * firmado, vencido), es 401. Si falla con un `AppError` (identity no
+ * responde, respuesta fuera de contrato), sale ese error: una sesión válida
+ * no tiene que ver «iniciá sesión» porque se cayó otro servicio.
  */
 const createContextMiddleware = ({
 	resolve,
@@ -58,9 +63,11 @@ const createContextMiddleware = ({
 				}
 				runWithContext(context, next)
 			})
-			.catch(() => {
+			.catch((error: unknown) => {
 				const { status, body } = toErrorResponse(
-					commonErrors.create('common.unauthenticated'),
+					error instanceof AppError
+						? error
+						: commonErrors.create('common.unauthenticated'),
 					currentTraceId()
 				)
 				response.status(status).json(body)
