@@ -121,3 +121,11 @@ HENKO_TEST_NATS_URL=nats://127.0.0.1:4299 pnpm test
 
 Subir el `version` del paquete y llegar a `main`: `release.yml` publica lo
 que tenga versión nueva.
+
+**Ojo con las versiones 0.x.** En 0.x, `^0.1.0` no acepta la `0.2.0`. Si un
+paquete sube el número del medio (`0.1.x` → `0.2.0`), hay que subir también
+el parche de **todos los paquetes que dependen de él**, para que se publiquen
+de nuevo apuntando a la versión nueva. Si no, un servicio termina con dos
+copias del mismo paquete: por ejemplo, dos `PgTransactions` que no son el
+mismo tipo, y el typecheck falla. Para ver quién depende de un paquete:
+`grep -l '"@henko-software/<paquete>"' packages/*/package.json`.
