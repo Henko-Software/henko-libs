@@ -18,7 +18,7 @@
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^19.8.1",
-		"@henko-software/agent-rules": "^0.1.0",
+		"@henko-software/agent-rules": "^0.3.0",
 		"@henko-software/commitlint-config": "^0.1.0",
 		"@henko-software/eslint-config": "^0.1.1",
 		"@henko-software/git-hooks": "^0.1.0",
