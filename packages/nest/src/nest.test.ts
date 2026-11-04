@@ -162,8 +162,9 @@ describe('parseInput', () => {
 		} catch (error) {
 			const fields = (error as { details: { fields: Record<string, string> } })
 				.details.fields
-			expect(fields.email).not.toMatch(/invalid/i)
-			expect(fields.email?.toLowerCase()).toContain('inválid')
+			expect(fields.email).toBe(
+				'Escribí un mail válido (por ejemplo, nombre@empresa.com).'
+			)
 			expect(fields.password).toBe('Mínimo 10 caracteres.')
 		}
 	})

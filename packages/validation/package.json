@@ -1,0 +1,33 @@
+{
+	"name": "@henko-software/validation",
+	"version": "0.1.0",
+	"description": "Mensajes de validación de zod en castellano, para la persona, y el error por campo.",
+	"license": "UNLICENSED",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Henko-Software/henko-libs.git",
+		"directory": "packages/validation"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"henko-source": "./src/index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"typecheck": "tsc -p tsconfig.json"
+	},
+	"dependencies": {
+		"zod": "^4.1.0"
+	}
+}

@@ -80,6 +80,15 @@ importers:
 
   packages/errors: {}
 
+  packages/flags:
+    dependencies:
+      '@henko-software/core':
+        specifier: workspace:^
+        version: link:../core
+      '@henko-software/errors':
+        specifier: workspace:^
+        version: link:../errors
+
   packages/hexagonal:
     dependencies:
       '@henko-software/tracing':
@@ -112,6 +121,9 @@ importers:
       '@henko-software/tracing':
         specifier: workspace:^
         version: link:../tracing
+      '@henko-software/validation':
+        specifier: workspace:^
+        version: link:../validation
       zod:
         specifier: ^4.1.0
         version: 4.6.7
@@ -224,6 +236,12 @@ importers:
       '@opentelemetry/semantic-conventions':
         specifier: ^1.43.0
         version: 1.43.0
+
+  packages/validation:
+    dependencies:
+      zod:
+        specifier: ^4.1.0
+        version: 4.6.7
 
 packages:
 
