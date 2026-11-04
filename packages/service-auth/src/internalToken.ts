@@ -8,7 +8,9 @@ import type { RequestContext } from '@henko-software/core'
  * Entre servicios nadie confía por estar en la misma red. Cada llamada lleva
  * un token interno, corto (60 s), firmado por el servicio que llama y con el
  * servicio destino como audiencia. Adentro viaja el contexto: quién es la
- * persona (o el proceso), su rol en ese momento, el local y la correlación.
+ * persona (o el proceso), su rol en ese momento, el local y la correlación;
+ * si un superadmin está «viendo como», el rol efectivo; y los flags ya
+ * resueltos por el BFF.
  * Nunca cabeceras sueltas como `x-user-id`.
  */
 
@@ -30,7 +32,22 @@ const claimsSchema = z.object({
 	actor: actorSchema,
 	localId: z.string().optional(),
 	correlationId: z.string().optional(),
-	causationId: z.string().optional()
+	causationId: z.string().optional(),
+	effective: z
+		.object({
+			userId: z.string().min(1),
+			role: z.string().min(1),
+			localIds: z.array(z.string())
+		})
+		.optional(),
+	viewAs: z
+		.object({
+			role: z.string().min(1),
+			userId: z.string().optional(),
+			localId: z.string().optional()
+		})
+		.optional(),
+	flags: z.record(z.string(), z.boolean()).optional()
 })
 
 export type VerifiedContext = RequestContext & {
@@ -59,7 +76,10 @@ const createInternalTokenSigner = async ({
 				actor: context.actor,
 				localId: context.localId,
 				correlationId: context.correlationId,
-				causationId: context.causationId
+				causationId: context.causationId,
+				effective: context.effective,
+				viewAs: context.viewAs,
+				flags: context.flags
 			})
 				.setProtectedHeader({ alg: ALG })
 				.setIssuer(issuer)
@@ -114,7 +134,10 @@ const createInternalTokenVerifier = async ({
 				actor: claims.actor,
 				localId: claims.localId,
 				correlationId: claims.correlationId,
-				causationId: claims.causationId
+				causationId: claims.causationId,
+				...(claims.effective ? { effective: claims.effective } : {}),
+				...(claims.viewAs ? { viewAs: claims.viewAs } : {}),
+				...(claims.flags ? { flags: claims.flags } : {})
 			}
 		}
 	}

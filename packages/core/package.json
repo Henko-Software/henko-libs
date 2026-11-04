@@ -1,6 +1,6 @@
 {
 	"name": "@henko-software/core",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Contexto del request (actor, local, correlación), UUIDv7 y plata en centavos.",
 	"license": "UNLICENSED",
 	"type": "module",

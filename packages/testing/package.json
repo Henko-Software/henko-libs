@@ -1,6 +1,6 @@
 {
 	"name": "@henko-software/testing",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Adaptadores en memoria para tests: auditoría, eventos, bus, reloj y transacciones.",
 	"license": "UNLICENSED",
 	"type": "module",

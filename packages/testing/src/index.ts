@@ -1,4 +1,8 @@
-import { type RequestContext, runWithContext } from '@henko-software/core'
+import {
+	getContext,
+	type RequestContext,
+	runWithContext
+} from '@henko-software/core'
 import type {
 	AuditRecord,
 	AuditTrail,
@@ -8,12 +12,26 @@ import type {
 	TransactionRunner
 } from '@henko-software/hexagonal'
 
-/** Auditoría en memoria: los tests revisan `entries`. */
+/**
+ * Auditoría en memoria: los tests revisan `entries` (lo que dijo el caso de
+ * uso) y `records` (lo mismo con el actor real y el «ver como» del contexto,
+ * como lo guarda `PgAuditTrail`).
+ */
 class InMemoryAuditTrail<A extends string = string> implements AuditTrail<A> {
 	readonly entries: AuditRecord<A>[] = []
+	readonly records: (AuditRecord<A> & {
+		actor?: RequestContext['actor']
+		viewAs?: RequestContext['viewAs']
+	})[] = []
 
 	async record(entry: AuditRecord<A>): Promise<void> {
 		this.entries.push(entry)
+		const context = getContext()
+		this.records.push({
+			...entry,
+			actor: context?.actor,
+			viewAs: context?.viewAs
+		})
 	}
 }
 

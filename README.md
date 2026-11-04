@@ -5,20 +5,22 @@ servicio necesita y nadie tiene que volver a escribir: contexto del request,
 errores con código para el usuario, logs, trazas, casos de uso hexagonales,
 auditoría y outbox. Se publica como paquetes `@henko-software/*`.
 
-| Paquete        | Qué trae                                                                                                                                                                                               |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `core`         | contexto del request (actor con rol congelado, local, correlación) que viaja solo por los `await`; `uuidv7`; plata en centavos                                                                         |
-| `errors`       | `defineErrors` (catálogo con mensaje obligatorio), `toErrorResponse` (nunca muestra el error interno) y el código corto `H-4BF92F` que sale de la traza                                                |
-| `tracing`      | `withSpan`, `currentTraceId`, y la traza que viaja en las cabeceras de un mensaje                                                                                                                      |
-| `tracing-node` | `initTracing`: OpenTelemetry con autoinstrumentación (HTTP, Postgres…) y envío OTLP                                                                                                                    |
-| `logger`       | pino en JSON con traza, actor, local y correlación en cada línea; CUIT, mails, tokens enmascarados                                                                                                     |
-| `hexagonal`    | `UseCase` (transacción + span con nombre), puertos `AuditTrail`, `EventPublisher`, `TransactionRunner`, `Clock`; `defineAuditActions`, `diffFields`                                                    |
-| `pg`           | `PgTransactions`: la transacción viaja con el contexto, así datos, auditoría y outbox se confirman juntos; `runMigrations`: migraciones `.sql` en orden, con checksum (frena si se edita una aplicada) |
-| `audit`        | `PgAuditTrail` + migración: append-only de verdad (sin UPDATE/DELETE para el rol del servicio)                                                                                                         |
-| `outbox`       | `PgOutboxPublisher` (el evento se guarda en la transacción), `OutboxRelay` (lo manda al bus, reintenta, en orden) y `NatsMessageBus` (JetStream, sin duplicados)                                       |
-| `service-auth` | tokens internos entre servicios (Ed25519, 60 s, con audiencia): quién llama y en nombre de quién, en vez de cabeceras sueltas tipo `x-user-id`                                                         |
-| `nest`         | adaptadores de NestJS: middleware de contexto (default-deny, rutas públicas explícitas), filtro de errores con código y `parseInput` (zod, error por campo)                                            |
-| `testing`      | auditoría, eventos, bus, reloj y transacciones en memoria; `withTestContext`                                                                                                                           |
+| Paquete        | Qué trae                                                                                                                                                                                                                                                             |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `core`         | contexto del request (actor con rol congelado, rol efectivo y «ver como», flags, local, correlación) que viaja solo por los `await`; `canSeeTrailOf`/`visibleTrail`/`visibleAuthor` (el rastro del superadmin sólo lo ve un superadmin); `uuidv7`; plata en centavos |
+| `errors`       | `defineErrors` (catálogo con mensaje obligatorio), `toErrorResponse` (nunca muestra el error interno) y el código corto `H-4BF92F` que sale de la traza                                                                                                              |
+| `tracing`      | `withSpan`, `currentTraceId`, y la traza que viaja en las cabeceras de un mensaje                                                                                                                                                                                    |
+| `tracing-node` | `initTracing`: OpenTelemetry con autoinstrumentación (HTTP, Postgres…) y envío OTLP                                                                                                                                                                                  |
+| `logger`       | pino en JSON con traza, actor, local y correlación en cada línea; CUIT, mails, tokens enmascarados                                                                                                                                                                   |
+| `hexagonal`    | `UseCase` (transacción + span con nombre), puertos `AuditTrail`, `EventPublisher`, `TransactionRunner`, `Clock`; `defineAuditActions`, `diffFields`                                                                                                                  |
+| `pg`           | `PgTransactions`: la transacción viaja con el contexto, así datos, auditoría y outbox se confirman juntos; `runMigrations`: migraciones `.sql` en orden, con checksum (frena si se edita una aplicada)                                                               |
+| `audit`        | `PgAuditTrail` + migración: append-only de verdad (sin UPDATE/DELETE para el rol del servicio)                                                                                                                                                                       |
+| `outbox`       | `PgOutboxPublisher` (el evento se guarda en la transacción), `OutboxRelay` (lo manda al bus, reintenta, en orden) y `NatsMessageBus` (JetStream, sin duplicados)                                                                                                     |
+| `service-auth` | tokens internos entre servicios (Ed25519, 60 s, con audiencia): quién llama y en nombre de quién, en vez de cabeceras sueltas tipo `x-user-id`                                                                                                                       |
+| `nest`         | adaptadores de NestJS: middleware de contexto (default-deny, rutas públicas explícitas), filtro de errores con código y `parseInput` (zod, error por campo en castellano)                                                                                            |
+| `validation`   | los mensajes de zod en castellano, escritos para la persona (`spanishErrorMap`), y el error por campo (`fieldErrors`, `validate`). Único lugar de esos textos                                                                                                        |
+| `flags`        | feature flags en árbol: `resolveFlags` (código < env < base, herencia, superadmin sin flags; sólo en el BFF), `parseFlagList` (capa env) e `isFlagOn`/`requireFlag` para los módulos                                                                                 |
+| `testing`      | auditoría, eventos, bus, reloj y transacciones en memoria; `withTestContext`                                                                                                                                                                                         |
 
 ## Cómo se usa en un servicio
 
@@ -95,6 +97,30 @@ El BFF o el consumidor de eventos envuelve cada request con
 `runWithContext({ actor, localId, correlationId }, …)`. En un servicio Nest,
 `createContextMiddleware` con `internalTokenResolver` lo hace solo, y
 `HenkoErrorFilter` da a todos los errores la misma forma.
+
+## Flags, «ver como» y rastro del superadmin
+
+Ver `estandares/flags-y-ver-como.md` de `@henko-software/agent-rules`.
+
+- **El BFF resuelve, los módulos leen.** El BFF llama a
+  `resolveFlags(catalogo, { defaults, env, base }, contexto)` una vez por
+  request y pone el resultado en `context.flags`, que viaja en el token
+  interno. En un módulo, `requireFlag('orders.returns')` al principio del
+  caso de uso (404 si está apagado) o `isFlagOn(...)` para decidir algo. Un
+  módulo nunca lee la tabla de flags.
+- **Dos caras del actor.** `context.actor` es siempre la persona real (va a
+  la auditoría y a los logs); `context.effective` (rol, persona y locales) es
+  con qué se la trata cuando un superadmin «ve como». Permisos y scope con
+  `effectiveRole(context)` o `context.effective`; nunca con `actor.role` a
+  secas. Un efectivo sólo vale si el actor real es superadmin.
+- **Auditoría en «ver como».** Queda a nombre del superadmin real; con
+  `auditViewAsMigration()` + `recordViewAs: true`, el rol simulado va en la
+  columna `view_as`.
+- **Rastro del superadmin.** Todo lo que muestre quién hizo algo (filas de
+  auditoría, «creado/editado por», historiales, avisos) pasa por
+  `visibleTrail(filas, fila => fila.actorRole)` o
+  `visibleAuthor(autor, rolDelAutor)`, con el rol congelado del autor real.
+  Sólo un superadmin real sin «ver como» lo ve.
 
 ## Desarrollo
 

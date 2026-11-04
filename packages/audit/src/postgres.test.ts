@@ -9,7 +9,11 @@ import {
 import { PgTransactions } from '@henko-software/pg'
 import { InMemoryMessageBus, withTestContext } from '@henko-software/testing'
 
-import { auditLogMigration, PgAuditTrail } from './index.js'
+import {
+	auditLogMigration,
+	auditViewAsMigration,
+	PgAuditTrail
+} from './index.js'
 
 /**
  * Integración contra un Postgres de verdad. Corre si existe
@@ -69,6 +73,7 @@ describe.skipIf(!url)('auditoría y outbox en Postgres', () => {
 			'GRANT SELECT, INSERT, UPDATE, DELETE ON contacts, outbox, audit_log TO henko_test_app'
 		)
 		await pool.query(auditLogMigration('henko_test_app'))
+		await pool.query(auditViewAsMigration())
 		tx = new PgTransactions(pool)
 		audit = new PgAuditTrail({
 			executor: () => tx.executor(),
@@ -104,6 +109,55 @@ describe.skipIf(!url)('auditoría y outbox en Postgres', () => {
 			before: null,
 			after: { name: 'Ana' }
 		})
+	})
+
+	it('en «ver como» queda a nombre del superadmin real, con el rol simulado', async () => {
+		const withViewAs = new PgAuditTrail<'contacts.contact.created'>({
+			executor: () => tx.executor(),
+			source: 'contacts',
+			recordViewAs: true
+		})
+		await withTestContext(
+			() =>
+				tx.run(() =>
+					withViewAs.record({
+						action: 'contacts.contact.created',
+						entityType: 'contact',
+						entityId: 'c-x'
+					})
+				),
+			{
+				actor: { origin: 'person', id: 'root', role: 'superadmin' },
+				effective: { userId: 'root', role: 'cashier', localIds: ['l1'] },
+				viewAs: { role: 'cashier', localId: 'l1' }
+			}
+		)
+		await withTestContext(() =>
+			tx.run(() =>
+				withViewAs.record({
+					action: 'contacts.contact.created',
+					entityType: 'contact',
+					entityId: 'c-y'
+				})
+			)
+		)
+		const { rows } = await pool.query(
+			'SELECT entity_id, actor_id, actor_role, view_as FROM audit_log ORDER BY entity_id'
+		)
+		expect(rows).toEqual([
+			{
+				entity_id: 'c-x',
+				actor_id: 'root',
+				actor_role: 'superadmin',
+				view_as: { role: 'cashier', localId: 'l1' }
+			},
+			{
+				entity_id: 'c-y',
+				actor_id: 'user-1',
+				actor_role: 'admin',
+				view_as: null
+			}
+		])
 	})
 
 	it('si la operación falla, no queda nada', async () => {

@@ -2,11 +2,16 @@ export {
 	type Actor,
 	automatic,
 	type AutomaticActor,
+	type EffectiveAccess,
+	effectiveRole,
 	getContext,
+	isEffectiveSuperadmin,
 	type PersonActor,
 	type RequestContext,
 	requireContext,
-	runWithContext
+	runWithContext,
+	SUPERADMIN_ROLE,
+	type ViewAs
 } from './context.js'
 export {
 	addMoney,
@@ -16,4 +21,5 @@ export {
 	multiplyMoney,
 	subtractMoney
 } from './money.js'
+export { canSeeTrailOf, visibleAuthor, visibleTrail } from './trail.js'
 export { uuidv7 } from './uuidv7.js'

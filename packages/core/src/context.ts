@@ -20,6 +20,27 @@ export type AutomaticActor = {
 export type Actor = PersonActor | AutomaticActor
 
 /**
+ * Con qué rol, persona y locales se trata al actor. Es distinto del actor
+ * sólo cuando un superadmin está «viendo como» otro rol: permisos, scope y
+ * flags usan esto; auditoría, trazas y sesión usan `actor` (el real).
+ */
+export type EffectiveAccess = {
+	/** La persona como la que se ve (el actor, o la elegida en «ver como»). */
+	userId: string
+	role: string
+	/** Locales que puede ver. Vacío = todos. */
+	localIds: string[]
+}
+
+/** El «ver como» en curso de un superadmin. */
+export type ViewAs = {
+	role: string
+	/** Una persona concreta: sólo lectura. */
+	userId?: string
+	localId?: string
+}
+
+/**
  * Lo que acompaña a cada request, job o mensaje. El actor sale de acá, no se
  * pasa por parámetro a cada función. La traza no está acá: la lleva
  * OpenTelemetry.
@@ -32,6 +53,19 @@ export type RequestContext = {
 	correlationId?: string
 	/** El evento o request que causó este trabajo. */
 	causationId?: string
+	/**
+	 * Rol, persona y locales efectivos. Si no viene, son los del actor. Lo
+	 * pone el BFF (y viaja en el token interno).
+	 */
+	effective?: EffectiveAccess
+	/** Si un superadmin está viendo como otro rol. Va a la auditoría. */
+	viewAs?: ViewAs
+	/**
+	 * Flags efectivos de la persona, resueltos una sola vez en el BFF
+	 * (`@henko-software/flags`). Los módulos los leen de acá, nunca de una
+	 * tabla.
+	 */
+	flags?: Record<string, boolean>
 }
 
 const storage = new AsyncLocalStorage<RequestContext>()
@@ -60,4 +94,38 @@ const automatic = (label: string): AutomaticActor => ({
 	label
 })
 
-export { automatic, getContext, requireContext, runWithContext }
+/** El rol de Henko que ve todo. */
+const SUPERADMIN_ROLE = 'superadmin'
+
+/**
+ * El rol con el que se trata a quien hace el pedido: el efectivo si hay «ver
+ * como», el del actor si no. Un proceso automático no tiene rol.
+ */
+const effectiveRole = (
+	context: RequestContext | undefined = getContext()
+): string | undefined => {
+	if (!context) return undefined
+	if (context.effective) return context.effective.role
+	return context.actor.origin === 'person' ? context.actor.role : undefined
+}
+
+/**
+ * ¿Es un superadmin real que no está viendo como otro rol? Sólo así no tiene
+ * flags y ve el rastro de otros superadmins.
+ */
+const isEffectiveSuperadmin = (
+	context: RequestContext | undefined = getContext()
+): boolean =>
+	context?.actor.origin === 'person' &&
+	context.actor.role === SUPERADMIN_ROLE &&
+	effectiveRole(context) === SUPERADMIN_ROLE
+
+export {
+	automatic,
+	effectiveRole,
+	getContext,
+	isEffectiveSuperadmin,
+	requireContext,
+	runWithContext,
+	SUPERADMIN_ROLE
+}

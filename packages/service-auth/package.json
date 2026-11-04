@@ -1,6 +1,6 @@
 {
 	"name": "@henko-software/service-auth",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Tokens internos firmados entre servicios: quién llama y en nombre de quién.",
 	"license": "UNLICENSED",
 	"type": "module",

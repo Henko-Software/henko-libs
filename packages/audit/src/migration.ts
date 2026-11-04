@@ -32,4 +32,14 @@ ${appRole ? `REVOKE UPDATE, DELETE, TRUNCATE ON audit_log FROM ${appRole};` : ''
 `
 }
 
-export { auditLogMigration }
+/**
+ * Columna `view_as` (0.1.3): lo hecho por un superadmin mientras «ve como»
+ * otro rol queda a su nombre (`actor_*` es el real) con el rol simulado acá.
+ * Va en una migración nueva del servicio; después, `recordViewAs: true` en
+ * `PgAuditTrail`.
+ */
+const auditViewAsMigration = (): string => `
+ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS view_as jsonb;
+`
+
+export { auditLogMigration, auditViewAsMigration }

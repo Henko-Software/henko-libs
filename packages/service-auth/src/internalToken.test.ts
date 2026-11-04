@@ -79,3 +79,26 @@ describe('tokens internos', () => {
 		).rejects.toThrow()
 	})
 })
+
+describe('ver como y flags en el token', () => {
+	it('el rol efectivo, el «ver como» y los flags llegan tal cual', async () => {
+		const signer = await createInternalTokenSigner({
+			issuer: 'bff',
+			privateKeyPem: bff.privateKeyPem
+		})
+		const verifier = await createInternalTokenVerifier({
+			audience: 'identity',
+			trustedIssuers: { bff: bff.publicKeyPem }
+		})
+		const viewing = {
+			actor: { origin: 'person' as const, id: 's1', role: 'superadmin' },
+			effective: { userId: 's1', role: 'cashier', localIds: ['l1'] },
+			viewAs: { role: 'cashier', localId: 'l1' },
+			flags: { orders: true, 'orders.returns': false }
+		}
+		const verified = await verifier.verify(
+			await signer.sign('identity', viewing)
+		)
+		expect(verified).toMatchObject(viewing)
+	})
+})
