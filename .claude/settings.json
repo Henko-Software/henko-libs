@@ -1,0 +1,13 @@
+{
+	"extraKnownMarketplaces": {
+		"henko-software": {
+			"source": {
+				"source": "github",
+				"repo": "Henko-Software/henko-standards"
+			}
+		}
+	},
+	"enabledPlugins": {
+		"henko@henko-software": true
+	}
+}

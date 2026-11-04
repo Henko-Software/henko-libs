@@ -12,8 +12,8 @@ importers:
         specifier: ^19.8.1
         version: 19.8.1(@types/node@22.20.5)(typescript@5.9.3)
       '@henko-software/agent-rules':
-        specifier: ^0.4.1
-        version: 0.4.1
+        specifier: ^0.4.3
+        version: 0.4.3
       '@henko-software/commitlint-config':
         specifier: ^0.1.0
         version: 0.1.0
@@ -534,8 +534,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@henko-software/agent-rules@0.4.1':
-    resolution: {integrity: sha512-n+761xu/6//OuEUhR9Hya9hXwEJwuX9Rd2LUi3Kl0AAngyUH1RWQ2GlrUBhDchydols2/nFHSBeHuRqYpNnFZA==, tarball: https://npm.pkg.github.com/download/@henko-software/agent-rules/0.4.1/e1146d6d53de753c498e11998a3aacbe05fb5d09}
+  '@henko-software/agent-rules@0.4.3':
+    resolution: {integrity: sha512-YXADMRpjRgLJOZkJFgE3jz6+FIEl0SIxSMcmcORGVWxb3H7l7i7mmPBIcLlTC+r0rSfVWQd6y4LwKa3IYs9f+w==, tarball: https://npm.pkg.github.com/download/@henko-software/agent-rules/0.4.3/c85a1e2f964f76ceb3847c468b6ba59e78fb9564}
 
   '@henko-software/commitlint-config@0.1.0':
     resolution: {integrity: sha512-+jXf3pYmBPrIQyjcM/z8Nh0N9Q0KN9UjRM2g+n28HTEtiwhwxEXYi/9nxiRCqJqzqTuy8544XwfeetNGqrh9+A==, tarball: https://npm.pkg.github.com/download/@henko-software/commitlint-config/0.1.0/6e701c6f2473c8ec8e65cd7e4ed4596c65342d92}
@@ -3460,7 +3460,7 @@ snapshots:
       protobufjs: 7.6.6
       yargs: 17.7.3
 
-  '@henko-software/agent-rules@0.4.1': {}
+  '@henko-software/agent-rules@0.4.3': {}
 
   '@henko-software/commitlint-config@0.1.0':
     dependencies:

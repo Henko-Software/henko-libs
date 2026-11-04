@@ -1,0 +1,4 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["github>Henko-Software/henko-standards:renovate-config"]
+}
