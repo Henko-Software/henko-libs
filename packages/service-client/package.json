@@ -1,0 +1,36 @@
+{
+	"name": "@henko-software/service-client",
+	"version": "0.1.0",
+	"description": "Cliente HTTP entre servicios: token interno firmado, timeout, respuesta validada con el contrato y el error del otro servicio con la misma clave.",
+	"license": "UNLICENSED",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Henko-Software/henko-libs.git",
+		"directory": "packages/service-client"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"henko-source": "./src/index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"typecheck": "tsc -p tsconfig.json"
+	},
+	"dependencies": {
+		"@henko-software/core": "workspace:^",
+		"@henko-software/errors": "workspace:^",
+		"@henko-software/tracing": "workspace:^",
+		"zod": "^4.1.0"
+	}
+}

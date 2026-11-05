@@ -194,6 +194,21 @@ importers:
         specifier: ^4.1.0
         version: 4.6.7
 
+  packages/service-client:
+    dependencies:
+      '@henko-software/core':
+        specifier: workspace:^
+        version: link:../core
+      '@henko-software/errors':
+        specifier: workspace:^
+        version: link:../errors
+      '@henko-software/tracing':
+        specifier: workspace:^
+        version: link:../tracing
+      zod:
+        specifier: ^4.1.0
+        version: 4.6.7
+
   packages/testing:
     dependencies:
       '@henko-software/core':
