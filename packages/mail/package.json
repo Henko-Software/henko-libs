@@ -1,0 +1,37 @@
+{
+	"name": "@henko-software/mail",
+	"version": "0.1.0",
+	"description": "Mails detrás de un puerto: adaptador log en desarrollo (no manda), SMTP por config, memoria en tests.",
+	"license": "UNLICENSED",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Henko-Software/henko-libs.git",
+		"directory": "packages/mail"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"henko-source": "./src/index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"typecheck": "tsc -p tsconfig.json"
+	},
+	"dependencies": {
+		"nodemailer": "^10.3.1",
+		"zod": "^4.1.0"
+	},
+	"devDependencies": {
+		"@types/nodemailer": "^8.0.2"
+	}
+}
