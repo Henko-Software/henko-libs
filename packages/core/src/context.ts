@@ -28,7 +28,10 @@ export type EffectiveAccess = {
 	/** La persona como la que se ve (el actor, o la elegida en «ver como»). */
 	userId: string
 	role: string
-	/** Locales que puede ver. Vacío = todos. */
+	/**
+	 * Locales que puede ver. Para los roles de casa central (que ven todos)
+	 * no se mira; para los demás, vacío = ninguno (`localsInScope`).
+	 */
 	localIds: string[]
 }
 
@@ -120,11 +123,28 @@ const isEffectiveSuperadmin = (
 	context.actor.role === SUPERADMIN_ROLE &&
 	effectiveRole(context) === SUPERADMIN_ROLE
 
+/**
+ * Decisión asumida 17 (ronda 2026-11-05): un rol atado a locales sin locales
+ * asignados **no ve nada**. Los locales al alcance son los efectivos del
+ * token o, si no trae, el local en curso; si no hay ninguno, `[]` (nada,
+ * nunca «todos»). Los roles que ven todos los locales (casa central) los
+ * decide cada módulo y no pasan por acá.
+ */
+const localsInScope = (
+	context: RequestContext | undefined = getContext()
+): string[] => {
+	if (!context) return []
+	const effective = context.effective?.localIds ?? []
+	if (effective.length > 0) return [...effective]
+	return context.localId ? [context.localId] : []
+}
+
 export {
 	automatic,
 	effectiveRole,
 	getContext,
 	isEffectiveSuperadmin,
+	localsInScope,
 	requireContext,
 	runWithContext,
 	SUPERADMIN_ROLE

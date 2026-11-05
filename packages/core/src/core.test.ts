@@ -4,6 +4,7 @@ import {
 	addMoney,
 	automatic,
 	getContext,
+	localsInScope,
 	money,
 	multiplyMoney,
 	requireContext,
@@ -62,5 +63,31 @@ describe('plata', () => {
 
 	it('multiplica por cantidad y redondea al centavo', () => {
 		expect(multiplyMoney(money(1999), 1.5)).toEqual(money(2999))
+	})
+})
+
+describe('localsInScope (decisión 17)', () => {
+	const person = { origin: 'person' as const, id: 'u1', role: 'manager' }
+	it('sin locales efectivos ni local en curso: ninguno', () => {
+		expect(localsInScope({ actor: person })).toEqual([])
+		expect(
+			localsInScope({
+				actor: person,
+				effective: { userId: 'u1', role: 'manager', localIds: [] }
+			})
+		).toEqual([])
+	})
+	it('los efectivos ganan; si no hay, el local en curso', () => {
+		expect(
+			localsInScope({
+				actor: person,
+				localId: 'l9',
+				effective: { userId: 'u1', role: 'manager', localIds: ['l1', 'l2'] }
+			})
+		).toEqual(['l1', 'l2'])
+		expect(localsInScope({ actor: person, localId: 'l9' })).toEqual(['l9'])
+	})
+	it('sin contexto: ninguno', () => {
+		expect(localsInScope(undefined)).toEqual([])
 	})
 })

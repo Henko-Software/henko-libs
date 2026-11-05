@@ -6,6 +6,7 @@ export {
 	effectiveRole,
 	getContext,
 	isEffectiveSuperadmin,
+	localsInScope,
 	type PersonActor,
 	type RequestContext,
 	requireContext,
