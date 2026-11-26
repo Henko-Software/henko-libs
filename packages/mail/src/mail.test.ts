@@ -1,7 +1,11 @@
+import { mkdtempSync, readdirSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
 	createMailer,
+	dirMailer,
 	logMailer,
 	mailEnvSchema,
 	memoryMailer
@@ -37,6 +41,18 @@ describe('mail', () => {
 		expect(env.MAIL_TRANSPORT).toBe('log')
 		expect(createMailer(env, { info: () => undefined })).toBeDefined()
 		expect(mailEnvSchema.safeParse({ MAIL_TRANSPORT: 'smtp' }).success).toBe(
+			false
+		)
+	})
+
+	it('dir deja el mail entero como JSON en la carpeta', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'henko-mail-'))
+		await dirMailer(dir).send(message)
+		const [file] = readdirSync(dir)
+		expect(file).toBeDefined()
+		const saved = JSON.parse(readFileSync(join(dir, file ?? ''), 'utf8'))
+		expect(saved).toMatchObject({ to: message.to, text: 'Hola' })
+		expect(mailEnvSchema.safeParse({ MAIL_TRANSPORT: 'dir' }).success).toBe(
 			false
 		)
 	})

@@ -1,7 +1,7 @@
 {
 	"name": "@henko-software/mail",
-	"version": "0.1.0",
-	"description": "Mails detrás de un puerto: adaptador log en desarrollo (no manda), SMTP por config, memoria en tests.",
+	"version": "0.2.0",
+	"description": "Mails detrás de un puerto: adaptador log en desarrollo (no manda), carpeta local para e2e, SMTP por config, memoria en tests.",
 	"license": "UNLICENSED",
 	"type": "module",
 	"repository": {

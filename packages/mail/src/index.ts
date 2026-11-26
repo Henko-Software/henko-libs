@@ -1,5 +1,6 @@
 export {
 	createMailer,
+	dirMailer,
 	logMailer,
 	type MailAttachment,
 	type MailEnv,

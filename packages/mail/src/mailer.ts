@@ -1,3 +1,5 @@
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import nodemailer from 'nodemailer'
 import { z } from 'zod'
 
@@ -65,6 +67,40 @@ export const smtpMailer = (url: string, from: string): Mailer => {
 	}
 }
 
+/**
+ * Desarrollo y e2e: no manda nada, deja cada mail entero (con el texto, que
+ * puede llevar links de un solo uso) como JSON en una carpeta local. Sirve
+ * para abrir el link de una invitación o de «olvidé mi contraseña» sin SMTP.
+ * Nunca en un servidor: la carpeta tiene secretos.
+ */
+export const dirMailer = (dir: string): Mailer => {
+	mkdirSync(dir, { recursive: true })
+	let sequence = 0
+	return {
+		send: message => {
+			sequence += 1
+			const name = `${new Date().toISOString().replace(/[:.]/g, '-')}-${String(sequence).padStart(4, '0')}.json`
+			writeFileSync(
+				join(dir, name),
+				JSON.stringify(
+					{
+						to: message.to,
+						subject: message.subject,
+						text: message.text,
+						attachments: message.attachments.map(a => ({
+							filename: a.filename,
+							bytes: a.content.byteLength
+						}))
+					},
+					null,
+					2
+				)
+			)
+			return Promise.resolve()
+		}
+	}
+}
+
 /** Tests: guarda lo que se mandó; `failNext(n)` hace fallar los próximos n envíos. */
 export const memoryMailer = () => {
 	const sent: MailMessage[] = []
@@ -90,23 +126,34 @@ export const memoryMailer = () => {
 
 /**
  * Las variables de entorno del mail, iguales en todos los servicios:
- * `MAIL_TRANSPORT` (`log` | `smtp`), `MAIL_SMTP_URL` y `MAIL_FROM`.
+ * `MAIL_TRANSPORT` (`log` | `smtp` | `dir`), `MAIL_SMTP_URL`, `MAIL_DIR` y
+ * `MAIL_FROM`.
  */
 export const mailEnvSchema = z
 	.object({
-		MAIL_TRANSPORT: z.enum(['log', 'smtp']).default('log'),
+		MAIL_TRANSPORT: z.enum(['log', 'smtp', 'dir']).default('log'),
 		MAIL_SMTP_URL: z.string().min(1).optional(),
+		/** Con `MAIL_TRANSPORT=dir`: la carpeta donde quedan los mails. */
+		MAIL_DIR: z.string().min(1).optional(),
 		MAIL_FROM: z.string().min(1).default('Henko <no-responder@henko.local>')
 	})
 	.refine(env => env.MAIL_TRANSPORT !== 'smtp' || Boolean(env.MAIL_SMTP_URL), {
 		path: ['MAIL_SMTP_URL'],
 		message: 'Con MAIL_TRANSPORT=smtp falta MAIL_SMTP_URL'
 	})
+	.refine(env => env.MAIL_TRANSPORT !== 'dir' || Boolean(env.MAIL_DIR), {
+		path: ['MAIL_DIR'],
+		message: 'Con MAIL_TRANSPORT=dir falta MAIL_DIR'
+	})
 
 export type MailEnv = z.infer<typeof mailEnvSchema>
 
 /** El adaptador que dice la config. */
-export const createMailer = (env: MailEnv, logger: MailLogger): Mailer =>
-	env.MAIL_TRANSPORT === 'smtp' && env.MAIL_SMTP_URL
-		? smtpMailer(env.MAIL_SMTP_URL, env.MAIL_FROM)
-		: logMailer(logger)
+export const createMailer = (env: MailEnv, logger: MailLogger): Mailer => {
+	if (env.MAIL_TRANSPORT === 'smtp' && env.MAIL_SMTP_URL) {
+		return smtpMailer(env.MAIL_SMTP_URL, env.MAIL_FROM)
+	}
+	if (env.MAIL_TRANSPORT === 'dir' && env.MAIL_DIR)
+		return dirMailer(env.MAIL_DIR)
+	return logMailer(logger)
+}
